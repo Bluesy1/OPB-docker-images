@@ -7,4 +7,3 @@ RUN Rscript -e "install.packages('openintro')"
 COPY entrypoint.py /r_autograder/entrypoint.py
 
 LABEL org.opencontainers.image.source=https://github.com/Bluesy1/OPB-docker-images
-LABEL org.opencontainers.image.description Custom R Grader image meant for the OPB Statistics problem bank.
