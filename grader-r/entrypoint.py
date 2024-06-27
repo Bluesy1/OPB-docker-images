@@ -57,6 +57,14 @@ def main():
 
     tests_list = DATA["submitted_answers"].pop("_extra_parts", [])
 
+    _autograder_files = DATA.get("params", {}).get("_autograder_files", [])
+
+    for file in _autograder_files:
+
+        path = JOB_DIR / file["path"]
+
+        path.write_text(base64.b64decode(file["contents"]).decode())
+
     subprocess.run("/r_autograder/run.sh", stdout=sys.stdout, stderr=sys.stderr)
 
     print("[entrypoint.py] Starting image addition to the results.")
