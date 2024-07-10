@@ -9,7 +9,7 @@ import sys
 import urllib.parse
 
 
-def encode_image(fp: pathlib.Path, label: str):
+def encode_image(fp: pathlib.Path, label: str) -> None | dict[str, str]:
     """Encodes an image file to base64 and adds a label.
 
     Args:
@@ -55,7 +55,7 @@ def main():
         print(f"[entrypoint.py] DATA (read from '{_data_file}') is not a dictionary. Aborting.")
         sys.exit(1)
 
-    tests_list = DATA["submitted_answers"].pop("_extra_parts", [])
+    tests_list: list[dict] = DATA["submitted_answers"].pop("_extra_parts", [])
 
     _autograder_files = DATA.get("params", {}).get("_autograder_files", [])
 
@@ -65,7 +65,7 @@ def main():
 
         path.write_text(base64.b64decode(file["contents"]).decode())
 
-    subprocess.run("/r_autograder/run.sh", stdout=sys.stdout, stderr=sys.stderr)
+    subprocess.run("/r_autograder/run.sh", stdout=sys.stdout, stderr=sys.stderr, check=False)  # noqa: S603
 
     print("[entrypoint.py] Starting image addition to the results.")
 
@@ -106,12 +106,14 @@ def main():
     
     tests_list.extend(RESULTS.get("tests", []))
 
-    points = sum([test["points"] for test in tests_list])
-    max_points = sum([test["max_points"] for test in tests_list])
+    RESULTS["tests"] = tests_list
+
+    points = sum([test["points"] for test in RESULTS["tests"]])
+    max_points = sum([test["max_points"] for test in RESULTS["tests"]])
 
     RESULTS["score"] = points / max_points
 
-    tests: dict[str, int] = {test["name"]: i for i, test in enumerate(tests_list)}
+    tests: dict[str, int] = {test["name"]: i for i, test in enumerate(RESULTS["tests"])}
 
     for image in images:
 
